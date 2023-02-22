@@ -119,7 +119,7 @@ def main():
     dp = DataParser()
     instructionLine ="10 data 120, 165, 1, 41, 252, 133, 1, 160, 0, 177, 251, 133,2, 165, 1, 9, 3, 133, 1, 88, 96"
     instructionLine2=";20 data 120, 165, 1, 41, 252, 133, 1, 160, 0, 165, 2, 145, 251, 165, 1, 9, 3, 133, 1, 88, 96"
-    print(instructionLine)
+    print(instructionLine2)
     instructionsInHexa = dp.fromDecimalString_toHexCode(instructionLine2)
     dp.fromHexCode_tomnemonicCode(instructionsInHexa)
     # instructionDecimal = "165"
