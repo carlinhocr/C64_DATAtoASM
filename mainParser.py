@@ -28,13 +28,24 @@ class DataParser(object):
         pass
 
     def prepareCodeForParsing(self,codeString):
+        upperString = codeString.upper()
+        position = upperString.find("DATA")
+        print(position)
+        noDataString = upperString[position+4:]
+        cleanString = noDataString.replace(" ","")
+        print(cleanString)
         #strip the 10 DATA
         #parse the comma separated string and add to a list of strings
         #return the list of strings
         pass
 
+    def checkCommaAndDigitsOnly(self,checkString):
+        pass
+    
 def main():
     dp = DataParser()
+    instructionLine ="10 data 120, 165, 1, 41, 252, 133, 1, 160, 0, 177, 251, 133,2, 165, 1, 9, 3, 133, 1, 88, 96"
+    dp.prepareCodeForParsing(instructionLine)
     instructionDecimal = "165"
     instructionHex = dp.codeDecimalTOhex(instructionDecimal)
     instructionFull = dp.instructionTobytes(instructionHex)
