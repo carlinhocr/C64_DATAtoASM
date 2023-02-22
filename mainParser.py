@@ -16,6 +16,23 @@ class DataParser(object):
                        }
         return instruction[instructionHex.upper()]
 
+    def fromDecimalString_toHexCode(self):
+        #get a list of strings with instructions and bytes
+        #parse to a list of isntruction code and paramenters as a sublist according to its memory addresing
+        #return list of strings with sublists of instructions and parameters
+        pass
+
+    def fromHexCode_tomnemonicCode(self):
+        #get a list of strings with sublists of instructions and parameters
+        #proper format it as mnemonics and $ and # formatting
+        pass
+
+    def prepareCodeForParsing(self,codeString):
+        #strip the 10 DATA
+        #parse the comma separated string and add to a list of strings
+        #return the list of strings
+        pass
+
 def main():
     dp = DataParser()
     instructionDecimal = "165"
