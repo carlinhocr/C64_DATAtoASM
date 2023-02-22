@@ -20,6 +20,7 @@ class DataParser(object):
             "60": [0, "RTS", "implied", "60"],
             "78": [0, "SEI", "implied", "78"],
             "85": [1, "STA", "zeropage", "85"],
+            "91": [1, "STA", "indirectindexed", "91"],
             "A0": [1, "LDY", "inmediate", "A0"],
             "A5": [1, "LDA", "zeropage", "A5"],
             "B1": [1, "LDA", "indirectindexed", "B1"],
@@ -33,7 +34,7 @@ class DataParser(object):
     def fromDecimalString_toHexCode(self,codeString):
         #get a list of strings with instructions and bytes
         byteList = self.prepareCodeForParsing(codeString)
-        print("byte list",byteList)
+        # print("byte list",byteList)
         #parse to a list of isntruction code and paramenters as a sublist according to its memory addresing
         instructionHexaParsedList = []
         byteListPosition = 0
@@ -43,7 +44,7 @@ class DataParser(object):
             hexInstruction = self.codeDecimalTOhex(byte)
             instructionFullElement = self.instructionFull(hexInstruction)
             arguments = instructionFullElement[0]
-            print(instructionFullElement,arguments)
+            # print(instructionFullElement,arguments)
             instructionlist=[]
             if arguments == 0:
                 instructionlist.append(hexInstruction)
@@ -51,20 +52,44 @@ class DataParser(object):
             else:
                 for i in (0,arguments):
                     hexElement = self.codeDecimalTOhex(byteList[byteListPosition])
-                    print (hexElement)
+                    # print (hexElement)
                     instructionlist.append(hexElement)
                     byteListPosition += 1
             instructionHexaParsedList.append(instructionlist)
-            print ("byteListPosition", byteListPosition)
-            print (instructionHexaParsedList)
+            # print ("byteListPosition", byteListPosition)
+            # print (instructionHexaParsedList)
         #return list of strings with sublists of instructions and parameters
         return instructionHexaParsedList
 
     def fromHexCode_tomnemonicCode(self,instructionHexaParsedList):
         #get a list of strings with sublists of instructions and parameters
-        for instructionLine in instructionHexaParsedList:
-            print(self.instructionFull(instructionLine[0])[1])
         #proper format it as mnemonics and $ and # formatting
+        for instructionLine in instructionHexaParsedList:
+            fullIntructionInfo = self.instructionFull(instructionLine[0])
+            memAddresing = fullIntructionInfo[2]
+            if memAddresing == "implied":
+                stringLine = fullIntructionInfo[1]
+            elif memAddresing == "indirectindexed":
+                stringLine = fullIntructionInfo[1]+" "
+                # proper format it as mnemonics and $ and # formatting
+                element = instructionLine.pop()
+                stringLine += "($"+element+").Y"
+            elif memAddresing == "zeropage":
+                stringLine = fullIntructionInfo[1]+" "
+                # proper format it as mnemonics and $ and # formatting
+                element = instructionLine.pop()
+                stringLine += "$"+element
+            elif memAddresing == "inmediate":
+                stringLine = fullIntructionInfo[1]+" "
+                # proper format it as mnemonics and $ and # formatting
+                element = instructionLine.pop()
+                stringLine += "#$"+element
+            else:
+                stringLine = fullIntructionInfo[1]+" "
+                # proper format it as mnemonics and $ and # formatting
+                element = instructionLine.pop()
+                stringLine +=element
+            print (stringLine)
         pass
 
     def prepareCodeForParsing(self,codeString):
@@ -93,7 +118,9 @@ class DataParser(object):
 def main():
     dp = DataParser()
     instructionLine ="10 data 120, 165, 1, 41, 252, 133, 1, 160, 0, 177, 251, 133,2, 165, 1, 9, 3, 133, 1, 88, 96"
-    instructionsInHexa = dp.fromDecimalString_toHexCode(instructionLine)
+    instructionLine2=";20 data 120, 165, 1, 41, 252, 133, 1, 160, 0, 165, 2, 145, 251, 165, 1, 9, 3, 133, 1, 88, 96"
+    print(instructionLine)
+    instructionsInHexa = dp.fromDecimalString_toHexCode(instructionLine2)
     dp.fromHexCode_tomnemonicCode(instructionsInHexa)
     # instructionDecimal = "165"
     # instructionHex = dp.codeDecimalTOhex(instructionDecimal)
