@@ -14,16 +14,24 @@ class DataParser(object):
         #indirect indexed. LDA($FD),Y
         instruction = {
             # number of bytes that follow, mnemonic, memory addressing mode, hex code
-            "9": [1, "ORA", "inmediate", "9"],
-            "29": [1, "AND", "inmediate", "29"],
+            "69": [1, "ADC", "immediate", "69","Add memory to accumulator with carry"],
+            "65": [1, "ADC", "zeropage", "65", "Add memory to accumulator with carry"],
+            "75": [1, "ADC", "zeropagex", "75", "Add memory to accumulator with carry"],
+            "6D": [2, "ADC", "absolute", "6D", "Add memory to accumulator with carry"],
+            "7D": [2, "ADC", "absolutex", "7D", "Add memory to accumulator with carry"],
+            "79": [2, "ADC", "absolutey", "79", "Add memory to accumulator with carry"],
+            "61": [1, "ADC", "indexedinderectx", "61", "Add memory to accumulator with carry"],
+            "71": [1, "ADC", "indirectindexedy", "71", "Add memory to accumulator with carry"],
+            "9": [1, "ORA", "immediate", "9"],
+            "29": [1, "AND", "immediate", "29"],
             "58": [0, "CLI", "implied", "58"],
             "60": [0, "RTS", "implied", "60"],
             "78": [0, "SEI", "implied", "78"],
             "85": [1, "STA", "zeropage", "85"],
-            "91": [1, "STA", "indirectindexed", "91"],
+            "91": [1, "STA", "indirectindexedy", "91"],
             "A0": [1, "LDY", "inmediate", "A0"],
             "A5": [1, "LDA", "zeropage", "A5"],
-            "B1": [1, "LDA", "indirectindexed", "B1"],
+            "B1": [1, "LDA", "indirectindexedy", "B1"],
                        }
         if instructionHex.upper() in instruction.keys():
             return instruction[instructionHex.upper()]
@@ -61,25 +69,52 @@ class DataParser(object):
         #return list of strings with sublists of instructions and parameters
         return instructionHexaParsedList
 
+
     def fromHexCode_tomnemonicCode(self,instructionHexaParsedList):
         #get a list of strings with sublists of instructions and parameters
         #proper format it as mnemonics and $ and # formatting
+        instructionsMnemonic=[]
         for instructionLine in instructionHexaParsedList:
             fullIntructionInfo = self.instructionFull(instructionLine[0])
             memAddresing = fullIntructionInfo[2]
             if memAddresing == "implied":
                 stringLine = fullIntructionInfo[1]
-            elif memAddresing == "indirectindexed":
+            elif memAddresing == "absolut":
+                stringLine = fullIntructionInfo[1]+" "
+                # proper format it as mnemonics and $ and # formatting
+                element = instructionLine.pop()
+                stringLine += "$"+element
+            elif memAddresing == "absolutx":
+                stringLine = fullIntructionInfo[1] + " "
+                # proper format it as mnemonics and $ and # formatting
+                element = instructionLine.pop()
+                stringLine += "$" + element + ".X"
+            elif memAddresing == "absoluty":
+                stringLine = fullIntructionInfo[1] + " "
+                # proper format it as mnemonics and $ and # formatting
+                element = instructionLine.pop()
+                stringLine += "$" + element + ".Y"
+            elif memAddresing == "indirectindexedy":
                 stringLine = fullIntructionInfo[1]+" "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
                 stringLine += "($"+element+").Y"
+            elif memAddresing == "indexedinderectx":
+                stringLine = fullIntructionInfo[1]+" "
+                # proper format it as mnemonics and $ and # formatting
+                element = instructionLine.pop()
+                stringLine += "($"+element+".X)"
             elif memAddresing == "zeropage":
                 stringLine = fullIntructionInfo[1]+" "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
                 stringLine += "$"+element
-            elif memAddresing == "inmediate":
+            elif memAddresing == "zeropagex":
+                stringLine = fullIntructionInfo[1]+" "
+                # proper format it as mnemonics and $ and # formatting
+                element = instructionLine.pop()
+                stringLine += "$"+element+".X"
+            elif memAddresing == "immediate":
                 stringLine = fullIntructionInfo[1]+" "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
@@ -89,8 +124,8 @@ class DataParser(object):
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
                 stringLine +=element
-            print (stringLine)
-        pass
+            instructionsMnemonic.append(stringLine)
+        return instructionsMnemonic
 
     def prepareCodeForParsing(self,codeString):
         # strip the 10 DATA
@@ -99,11 +134,12 @@ class DataParser(object):
         noDataString = upperString[position+4:]
         cleanString = noDataString.replace(" ","")
         if self.checkCommaAndDigitsOnly(cleanString):
-            print("the string is not formatted as only line number, data,and comma separated numbers")
-            exit(-1)
-        # parse the comma separated string and add to a list of strings
-        byteList = cleanString.split(",")
-        #return the list of strings
+            #print("the string is not formatted as only line number, data,and comma separated numbers")
+            byteList = []
+        else:
+            # parse the comma separated string and add to a list of strings
+            byteList = cleanString.split(",")
+            #return the list of strings
         return byteList
 
     def checkCommaAndDigitsOnly(self,checkString):
@@ -115,17 +151,48 @@ class DataParser(object):
                 badString = True
         return badString
 
+    def buildBinaryCode(self,instruction):
+        pass
+
+    def read_file(self,filename):
+        with open(filename,'r') as fileDataBasic:
+            dataLines = fileDataBasic.read().strip().splitlines()
+        return dataLines
+
+    def write_fileMnemonics(self,filename,instructionMnemonicsLines):
+        with open(filename, 'w') as fileMnemonics:
+            for line in instructionMnemonicsLines:
+                for instruction in line:
+                    fileMnemonics.write(instruction+"\n")
+
+    def parseDataFile(self,readFilename,writeFilename):
+        dataLines = self.read_file(readFilename)
+        hexaStringLines = []
+        instructionMnemonicsLines = []
+        for line in dataLines:
+            hexaStringLines.append(self.fromDecimalString_toHexCode(line))
+        for toPrintLine in hexaStringLines:
+            instructionMnemonicsLines.append(self.fromHexCode_tomnemonicCode(toPrintLine))
+        self.printDataLines(dataLines)
+        self.printMnemonics(instructionMnemonicsLines)
+        self.write_fileMnemonics(writeFilename,instructionMnemonicsLines)
+
+
+    def printDataLines(self,dataLines):
+        for line in dataLines:
+            print (line)
+
+    def printMnemonics(self,instructionMnemonicsLines):
+        for line in instructionMnemonicsLines:
+            for instruction in line:
+                print (instruction)
+
 def main():
     dp = DataParser()
-    instructionLine ="10 data 120, 165, 1, 41, 252, 133, 1, 160, 0, 177, 251, 133,2, 165, 1, 9, 3, 133, 1, 88, 96"
-    instructionLine2=";20 data 120, 165, 1, 41, 252, 133, 1, 160, 0, 165, 2, 145, 251, 165, 1, 9, 3, 133, 1, 88, 96"
-    print(instructionLine2)
-    instructionsInHexa = dp.fromDecimalString_toHexCode(instructionLine2)
-    dp.fromHexCode_tomnemonicCode(instructionsInHexa)
-    # instructionDecimal = "165"
-    # instructionHex = dp.codeDecimalTOhex(instructionDecimal)
-    # instructionFull = dp.instructionTobytes(instructionHex)
-    #print(instructionFull)
+    readFilename = "003_byte01.bas"
+    writeFilename = "003_byte01.asm"
+    dp.parseDataFile(readFilename,writeFilename)
+
 
 if __name__ == "__main__":
     main()
