@@ -1,3 +1,5 @@
+import sys
+
 class DataParser(object):
 
     def __init__(self):
@@ -42,7 +44,6 @@ class DataParser(object):
     def fromDecimalString_toHexCode(self,codeString):
         #get a list of strings with instructions and bytes
         byteList = self.prepareCodeForParsing(codeString)
-        # print("byte list",byteList)
         #parse to a list of isntruction code and paramenters as a sublist according to its memory addresing
         instructionHexaParsedList = []
         byteListPosition = 0
@@ -52,7 +53,6 @@ class DataParser(object):
             hexInstruction = self.codeDecimalTOhex(byte)
             instructionFullElement = self.instructionFull(hexInstruction)
             arguments = instructionFullElement[0]
-            # print(instructionFullElement,arguments)
             instructionlist=[]
             if arguments == 0:
                 instructionlist.append(hexInstruction)
@@ -64,8 +64,6 @@ class DataParser(object):
                     instructionlist.append(hexElement)
                     byteListPosition += 1
             instructionHexaParsedList.append(instructionlist)
-            # print ("byteListPosition", byteListPosition)
-            # print (instructionHexaParsedList)
         #return list of strings with sublists of instructions and parameters
         return instructionHexaParsedList
 
@@ -173,9 +171,10 @@ class DataParser(object):
             hexaStringLines.append(self.fromDecimalString_toHexCode(line))
         for toPrintLine in hexaStringLines:
             instructionMnemonicsLines.append(self.fromHexCode_tomnemonicCode(toPrintLine))
-        self.printDataLines(dataLines)
-        self.printMnemonics(instructionMnemonicsLines)
+        # self.printDataLines(dataLines)
+        # self.printMnemonics(instructionMnemonicsLines)
         self.write_fileMnemonics(writeFilename,instructionMnemonicsLines)
+        print("Writing File: ",writeFilename)
 
 
     def printDataLines(self,dataLines):
@@ -189,9 +188,18 @@ class DataParser(object):
 
 def main():
     dp = DataParser()
-    readFilename = "003_byte01.bas"
-    writeFilename = "003_byte01.asm"
-    dp.parseDataFile(readFilename,writeFilename)
+    if len(sys.argv) != 3:
+        print ("Invalid amount of arguments, call it as:")
+        print ("mainParser fileWithBasiCode.bas fileToHaveASMCode.asm")
+    else:
+        pythonProgramFileName = sys.argv[0]
+        readFilename = sys.argv[1]
+        writeFilename = sys.argv[2]
+        dp.parseDataFile(readFilename,writeFilename)
+    # readFilename = "003_byte01.bas"
+    # writeFilename = "003_byte01.asm"
+    # print(readFilename, writeFilename)
+    # dp.parseDataFile(readFilename, writeFilename)
 
 
 if __name__ == "__main__":
