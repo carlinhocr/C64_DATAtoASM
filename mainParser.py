@@ -190,7 +190,7 @@ def main():
     dp = DataParser()
     if len(sys.argv) != 3:
         print ("Invalid amount of arguments, call it as:")
-        print ("mainParser fileWithBasiCode.bas fileToHaveASMCode.asm")
+        print ("mainParser fileWithBasicCode.bas fileToHaveASMCode.asm")
     else:
         pythonProgramFileName = sys.argv[0]
         readFilename = sys.argv[1]
