@@ -24,8 +24,22 @@ class DataParser(object):
             "79": [2, "ADC", "absolutey", "79", "Add memory to accumulator with carry"],
             "61": [1, "ADC", "indexedinderectx", "61", "Add memory to accumulator with carry"],
             "71": [1, "ADC", "indirectindexedy", "71", "Add memory to accumulator with carry"],
-            "9": [1, "ORA", "immediate", "9"],
-            "29": [1, "AND", "immediate", "29"],
+
+            "29": [1, "AND", "immediate", "29", "AND memory with accumulator"],
+            "25": [1, "AND", "zeropage", "25", "AND memory with accumulator"],
+            "35": [1, "AND", "zeropagex", "35", "AND memory with accumulator"],
+            "2D": [2, "AND", "absolute", "2D", "AND memory with accumulator"],
+            "3D": [2, "AND", "absolutex", "3D", "AND memory with accumulator"],
+            "39": [2, "AND", "absolutey", "39", "AND memory with accumulator"],
+            "21": [1, "AND", "indexedinderectx", "21", "AND memory with accumulator"],
+            "31": [1, "AND", "indirectindexedy", "31", "AND memory with accumulator"],
+
+            "0A": [0, "ASL", "accumulator", "0A", "Shift left one bit (Memory or Accumulator)"],
+            "06": [1, "ASL", "zeropage", "06", "Shift left one bit (Memory or Accumulator)"],
+            "16": [1, "ASL", "zeropagex", "16", "Shift left one bit (Memory or Accumulator)"],
+            "0E": [2, "ASL", "absolute", "0E", "Shift left one bit (Memory or Accumulator)"],
+            "1E": [2, "ASL", "absolutex", "1E", "Shift left one bit (Memory or Accumulator)"],
+
             "58": [0, "CLI", "implied", "58"],
             "60": [0, "RTS", "implied", "60"],
             "78": [0, "SEI", "implied", "78"],
@@ -34,6 +48,7 @@ class DataParser(object):
             "A0": [1, "LDY", "inmediate", "A0"],
             "A5": [1, "LDA", "zeropage", "A5"],
             "B1": [1, "LDA", "indirectindexedy", "B1"],
+            "9": [1, "ORA", "immediate", "9"],
                        }
         if instructionHex.upper() in instruction.keys():
             return instruction[instructionHex.upper()]
@@ -75,50 +90,53 @@ class DataParser(object):
         for instructionLine in instructionHexaParsedList:
             fullIntructionInfo = self.instructionFull(instructionLine[0])
             memAddresing = fullIntructionInfo[2]
+            stringLine = "\t"
             if memAddresing == "implied":
-                stringLine = fullIntructionInfo[1]
+                stringLine += fullIntructionInfo[1]
+            elif memAddresing == "accumulator":
+                stringLine += fullIntructionInfo[1]
             elif memAddresing == "absolut":
-                stringLine = fullIntructionInfo[1]+" "
+                stringLine += fullIntructionInfo[1]+" "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
                 stringLine += "$"+element
             elif memAddresing == "absolutx":
-                stringLine = fullIntructionInfo[1] + " "
+                stringLine += fullIntructionInfo[1] + " "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
-                stringLine += "$" + element + ".X"
+                stringLine += "$" + element + ",X"
             elif memAddresing == "absoluty":
-                stringLine = fullIntructionInfo[1] + " "
+                stringLine += fullIntructionInfo[1] + " "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
-                stringLine += "$" + element + ".Y"
+                stringLine += "$" + element + ",Y"
             elif memAddresing == "indirectindexedy":
-                stringLine = fullIntructionInfo[1]+" "
+                stringLine += fullIntructionInfo[1]+" "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
-                stringLine += "($"+element+").Y"
+                stringLine += "($"+element+"),Y"
             elif memAddresing == "indexedinderectx":
-                stringLine = fullIntructionInfo[1]+" "
+                stringLine += fullIntructionInfo[1]+" "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
-                stringLine += "($"+element+".X)"
+                stringLine += "($"+element+",X)"
             elif memAddresing == "zeropage":
-                stringLine = fullIntructionInfo[1]+" "
+                stringLine += fullIntructionInfo[1]+" "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
                 stringLine += "$"+element
             elif memAddresing == "zeropagex":
-                stringLine = fullIntructionInfo[1]+" "
+                stringLine += fullIntructionInfo[1]+" "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
-                stringLine += "$"+element+".X"
+                stringLine += "$"+element+",X"
             elif memAddresing == "immediate":
-                stringLine = fullIntructionInfo[1]+" "
+                stringLine += fullIntructionInfo[1]+" "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
                 stringLine += "#$"+element
             else:
-                stringLine = fullIntructionInfo[1]+" "
+                stringLine += fullIntructionInfo[1]+" "
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
                 stringLine +=element
@@ -167,6 +185,7 @@ class DataParser(object):
         dataLines = self.read_file(readFilename)
         hexaStringLines = []
         instructionMnemonicsLines = []
+        instructionMnemonicsLines.append(['*=0900'])
         for line in dataLines:
             hexaStringLines.append(self.fromDecimalString_toHexCode(line))
         for toPrintLine in hexaStringLines:
