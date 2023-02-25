@@ -167,8 +167,30 @@ class DataParser(object):
                 badString = True
         return badString
 
-    def buildBinaryCode(self,instruction):
-        pass
+    def buildBinaryCode(self,hexaStringLines):
+        byteString = ""
+        for line in hexaStringLines:
+            for instruction in line:
+                for element in instruction:
+                    if len(element) == 1:
+                        byteString += "0" + element
+                    elif len(element) == 2:
+                        byteString += element
+                    elif len(element) == 3:
+                        lowByte = element[1:]
+                        highByte = "0" + element[:1]
+                        element = lowByte + highByte
+                        byteString += element
+                    elif len(element) == 4:
+                        lowByte = element[:1]
+                        highByte = element[1:]
+                        element = lowByte + highByte
+                        byteString += element
+                    else:
+                        print("error in hexa element", element)
+                        exit(-3)
+        return byteString
+
 
     def read_file(self,filename):
         with open(filename,'r') as fileDataBasic:
@@ -188,12 +210,13 @@ class DataParser(object):
         instructionMnemonicsLines.append(['*=0900'])
         for line in dataLines:
             hexaStringLines.append(self.fromDecimalString_toHexCode(line))
+        binaryCode = self.buildBinaryCode(hexaStringLines)
         for toPrintLine in hexaStringLines:
             instructionMnemonicsLines.append(self.fromHexCode_tomnemonicCode(toPrintLine))
-        # self.printDataLines(dataLines)
-        # self.printMnemonics(instructionMnemonicsLines)
+        self.printMnemonics(instructionMnemonicsLines)
         self.write_fileMnemonics(writeFilename,instructionMnemonicsLines)
         print("Writing File: ",writeFilename)
+        print("Binary Code",binaryCode)
 
 
     def printDataLines(self,dataLines):
@@ -215,7 +238,7 @@ def main():
         readFilename = sys.argv[1]
         writeFilename = sys.argv[2]
         dp.parseDataFile(readFilename,writeFilename)
-    # readFilename = "003_byte01.bas"
+    # readFilename = "004_byte01.bas"
     # writeFilename = "003_byte01.asm"
     # print(readFilename, writeFilename)
     # dp.parseDataFile(readFilename, writeFilename)
