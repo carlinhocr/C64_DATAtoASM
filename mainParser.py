@@ -203,6 +203,10 @@ class DataParser(object):
                 for instruction in line:
                     fileMnemonics.write(instruction+"\n")
 
+    def write_binaryFile(self,filename,binaryCode):
+        with open(filename+".bin", 'wb') as fileBinary:
+            fileBinary.write(bytes.fromhex(binaryCode))
+
     def parseDataFile(self,readFilename,writeFilename):
         dataLines = self.read_file(readFilename)
         hexaStringLines = []
@@ -216,6 +220,7 @@ class DataParser(object):
         self.printMnemonics(instructionMnemonicsLines)
         self.write_fileMnemonics(writeFilename,instructionMnemonicsLines)
         print("Writing File: ",writeFilename)
+        self.write_binaryFile(writeFilename,binaryCode)
         print("Binary Code",binaryCode)
 
 
