@@ -40,7 +40,12 @@ class DataParser(object):
             "0E": [2, "ASL", "absolute", "0E", "Shift left one bit (Memory or Accumulator"],
             "1E": [2, "ASL", "absolutex", "1E", "Shift left one bit (Memory or Accumulator"],
 
+            "0": [0, "BRK", "implied", "0", "Force Break"],
+
             "20": [2, "JSR", "absolute", "20", "Jump to new location saving return address"],
+
+            "1": [1, "ORA", "indexedinderectx", "1", "OR memory with accumulator"],
+
             "48": [0, "PHA", "implied", "48", "Push accumulator on stack"],
 
 
