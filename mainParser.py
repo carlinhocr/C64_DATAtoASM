@@ -34,11 +34,15 @@ class DataParser(object):
             "21": [1, "AND", "indexedinderectx", "21", "AND memory with accumulator"],
             "31": [1, "AND", "indirectindexedy", "31", "AND memory with accumulator"],
 
-            "0A": [0, "ASL", "accumulator", "0A", "Shift left one bit (Memory or Accumulator)"],
-            "06": [1, "ASL", "zeropage", "06", "Shift left one bit (Memory or Accumulator)"],
-            "16": [1, "ASL", "zeropagex", "16", "Shift left one bit (Memory or Accumulator)"],
-            "0E": [2, "ASL", "absolute", "0E", "Shift left one bit (Memory or Accumulator)"],
-            "1E": [2, "ASL", "absolutex", "1E", "Shift left one bit (Memory or Accumulator)"],
+            "0A": [0, "ASL", "accumulator", "0A", "Shift left one bit (Memory or Accumulator"],
+            "06": [1, "ASL", "zeropage", "06", "Shift left one bit (Memory or Accumulator"],
+            "16": [1, "ASL", "zeropagex", "16", "Shift left one bit (Memory or Accumulator"],
+            "0E": [2, "ASL", "absolute", "0E", "Shift left one bit (Memory or Accumulator"],
+            "1E": [2, "ASL", "absolutex", "1E", "Shift left one bit (Memory or Accumulator"],
+
+            "20": [2, "JSR", "absolute", "20", "Jump to new location saving return address"],
+            "48": [0, "PHA", "implied", "48", "Push accumulator on stack"],
+
 
             "58": [0, "CLI", "implied", "58"],
             "60": [0, "RTS", "implied", "60"],
@@ -53,7 +57,7 @@ class DataParser(object):
         if instructionHex.upper() in instruction.keys():
             return instruction[instructionHex.upper()]
         else:
-            print("bad parsing instruction for 6502 not found")
+            print("bad parsing instruction for 6502 not found: ",instructionHex.upper() )
             exit(-2)
 
     def fromDecimalString_toHexCode(self,codeString):
@@ -63,6 +67,8 @@ class DataParser(object):
         instructionHexaParsedList = []
         byteListPosition = 0
         end = len(byteList)
+        print (codeString)
+        print(byteList)
         while byteListPosition < end:
             byte = byteList[byteListPosition]
             hexInstruction = self.codeDecimalTOhex(byte)
@@ -73,12 +79,17 @@ class DataParser(object):
                 instructionlist.append(hexInstruction)
                 byteListPosition += 1
             else:
-                for i in (0,arguments):
-                    hexElement = self.codeDecimalTOhex(byteList[byteListPosition])
-                    # print (hexElement)
-                    instructionlist.append(hexElement)
+                for g in range(0, arguments+1): #step in 1 it was counting on two at a time
+                    print (len(byteList),byteListPosition)
+                    if byteListPosition <= end -1:
+                        print (len(byteList))
+                        hexElement = self.codeDecimalTOhex(byteList[byteListPosition])
+                        print ("number of arguments: ",arguments,"iteration: ",g, byteList[byteListPosition], hexElement)
+                        instructionlist.append(hexElement)
                     byteListPosition += 1
             instructionHexaParsedList.append(instructionlist)
+            print(byte)
+            print(instructionHexaParsedList)
         #return list of strings with sublists of instructions and parameters
         return instructionHexaParsedList
 
