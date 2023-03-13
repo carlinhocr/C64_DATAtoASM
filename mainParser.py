@@ -40,13 +40,39 @@ class DataParser(object):
             "0E": [2, "ASL", "absolute", "0E", "Shift left one bit (Memory or Accumulator"],
             "1E": [2, "ASL", "absolutex", "1E", "Shift left one bit (Memory or Accumulator"],
 
+            "90": [1, "BBC", "relative", "90", "Branch on carry clear"],
+
+            "B0": [1, "BCS", "relative", "B0", "Branch on carry set"],
+
+            "F0": [1, "BEQ", "relative", "F0", "Branch on result zero"],
+
+            "24": [1, "BIT", "zeropage", "24", "Test bits in memory with accumulator"],
+            "2C": [2, "BIT", "absolute", "2C", "Test bits in memory with accumulator"],
+
+            "30": [1, "BMI", "relative", "30", "Branch on result minus"],
+
+            "D0": [1, "BNE", "relative", "D0", "Branch on result not zero"],
+
+            "10": [1, "BPL", "relative", "10", "Branch on result plus"],
+
             "0": [0, "BRK", "implied", "0", "Force Break"],
+
+            "50": [1, "BVC", "relative", "50", "Branch on overflow clear"],
+
+            "70": [1, "BVS", "relative", "70", "Branch on overflow set"],
+
+
+
+            "4C": [2, "JMP", "absolute", "4C", "Jump to new location"],
+            "6C": [2, "JMP", "indirect", "6C", "Jump to new location"],
 
             "20": [2, "JSR", "absolute", "20", "Jump to new location saving return address"],
 
             "1": [1, "ORA", "indexedinderectx", "1", "OR memory with accumulator"],
+            "9": [1, "ORA", "immediate", "9", "OR memory with accumulator"],
 
             "48": [0, "PHA", "implied", "48", "Push accumulator on stack"],
+            "68": [0, "PLA", "implied", "68", "Pull accumulator from stack"],
 
 
             "58": [0, "CLI", "implied", "58"],
@@ -57,7 +83,15 @@ class DataParser(object):
             "A0": [1, "LDY", "inmediate", "A0"],
             "A5": [1, "LDA", "zeropage", "A5"],
             "B1": [1, "LDA", "indirectindexedy", "B1"],
-            "9": [1, "ORA", "immediate", "9"],
+            "A8": [0, "TAY", "implied", "A8", "Transfer accumulator to index Y"],
+
+            "8A": [0, "TXA", "implied", "8A", "Transfer index X to accumulator"],
+
+            "9A": [0, "TXS", "implied", "9A", "Transfer index X to stack pointer"],
+
+            "98": [0, "TYA", "implied", "98", "Transfer index Y to accumulatorr"],
+
+
                        }
         if instructionHex.upper() in instruction.keys():
             return instruction[instructionHex.upper()]
@@ -65,14 +99,12 @@ class DataParser(object):
             print("bad parsing instruction for 6502 not found: ",instructionHex.upper() )
             exit(-2)
 
-    def fromDecimalString_toHexCode(self,codeString):
+    def fromDecimalString_toHexCode(self,byteList):
         #get a list of strings with instructions and bytes
-        byteList = self.prepareCodeForParsing(codeString)
         #parse to a list of isntruction code and paramenters as a sublist according to its memory addresing
         instructionHexaParsedList = []
         byteListPosition = 0
         end = len(byteList)
-        print (codeString)
         print(byteList)
         while byteListPosition < end:
             byte = byteList[byteListPosition]
@@ -136,6 +168,11 @@ class DataParser(object):
                 # proper format it as mnemonics and $ and # formatting
                 element = instructionLine.pop()
                 stringLine += "($"+element+",X)"
+            elif memAddresing == "indirect":
+                stringLine += fullIntructionInfo[1]+" "
+                # proper format it as mnemonics and $ and # formatting
+                element = instructionLine.pop()
+                stringLine += "($"+element+")"
             elif memAddresing == "zeropage":
                 stringLine += fullIntructionInfo[1]+" "
                 # proper format it as mnemonics and $ and # formatting
@@ -226,10 +263,19 @@ class DataParser(object):
     def parseDataFile(self,readFilename,writeFilename):
         dataLines = self.read_file(readFilename)
         hexaStringLines = []
+        byteList = []
         instructionMnemonicsLines = []
         instructionMnemonicsLines.append(['*=0900'])
+        print("datalines", dataLines)
+        byteString = []
         for line in dataLines:
-            hexaStringLines.append(self.fromDecimalString_toHexCode(line))
+            byteList.append(self.prepareCodeForParsing(line))
+        for line in byteList:
+            for element in line:
+                byteString.append(element)
+        print("bytelist", byteList)
+        print("bytestring", byteString)
+        hexaStringLines.append(self.fromDecimalString_toHexCode(byteString))
         binaryCode = self.buildBinaryCode(hexaStringLines)
         for toPrintLine in hexaStringLines:
             instructionMnemonicsLines.append(self.fromHexCode_tomnemonicCode(toPrintLine))
