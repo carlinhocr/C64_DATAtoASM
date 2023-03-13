@@ -105,7 +105,6 @@ class DataParser(object):
         instructionHexaParsedList = []
         byteListPosition = 0
         end = len(byteList)
-        print(byteList)
         while byteListPosition < end:
             byte = byteList[byteListPosition]
             hexInstruction = self.codeDecimalTOhex(byte)
@@ -117,19 +116,13 @@ class DataParser(object):
                 byteListPosition += 1
             else:
                 for g in range(0, arguments+1): #step in 1 it was counting on two at a time
-                    print (len(byteList),byteListPosition)
                     if byteListPosition <= end -1:
-                        print (len(byteList))
                         hexElement = self.codeDecimalTOhex(byteList[byteListPosition])
-                        print ("number of arguments: ",arguments,"iteration: ",g, byteList[byteListPosition], hexElement)
                         instructionlist.append(hexElement)
                     byteListPosition += 1
             instructionHexaParsedList.append(instructionlist)
-            print(byte)
-            print(instructionHexaParsedList)
         #return list of strings with sublists of instructions and parameters
         return instructionHexaParsedList
-
 
     def fromHexCode_tomnemonicCode(self,instructionHexaParsedList):
         #get a list of strings with sublists of instructions and parameters
@@ -244,21 +237,24 @@ class DataParser(object):
                         exit(-3)
         return byteString
 
-
     def read_file(self,filename):
         with open(filename,'r') as fileDataBasic:
             dataLines = fileDataBasic.read().strip().splitlines()
         return dataLines
 
     def write_fileMnemonics(self,filename,instructionMnemonicsLines):
+        filename += ".asm"
         with open(filename, 'w') as fileMnemonics:
             for line in instructionMnemonicsLines:
                 for instruction in line:
                     fileMnemonics.write(instruction+"\n")
+        print("Writing ASM File: ",filename)
 
     def write_binaryFile(self,filename,binaryCode):
-        with open(filename+".bin", 'wb') as fileBinary:
+        filename += ".bin"
+        with open(filename, 'wb') as fileBinary:
             fileBinary.write(bytes.fromhex(binaryCode))
+        print("Writing BIN File: ",filename)
 
     def parseDataFile(self,readFilename,writeFilename):
         dataLines = self.read_file(readFilename)
@@ -266,25 +262,20 @@ class DataParser(object):
         byteList = []
         instructionMnemonicsLines = []
         instructionMnemonicsLines.append(['*=0900'])
-        print("datalines", dataLines)
         byteString = []
         for line in dataLines:
             byteList.append(self.prepareCodeForParsing(line))
         for line in byteList:
             for element in line:
                 byteString.append(element)
-        print("bytelist", byteList)
-        print("bytestring", byteString)
         hexaStringLines.append(self.fromDecimalString_toHexCode(byteString))
         binaryCode = self.buildBinaryCode(hexaStringLines)
         for toPrintLine in hexaStringLines:
             instructionMnemonicsLines.append(self.fromHexCode_tomnemonicCode(toPrintLine))
         self.printMnemonics(instructionMnemonicsLines)
         self.write_fileMnemonics(writeFilename,instructionMnemonicsLines)
-        print("Writing File: ",writeFilename)
         self.write_binaryFile(writeFilename,binaryCode)
         print("Binary Code",binaryCode)
-
 
     def printDataLines(self,dataLines):
         for line in dataLines:
